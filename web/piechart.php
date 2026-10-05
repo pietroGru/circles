@@ -160,6 +160,15 @@
           <b>Show animations</b>
         </div>
         <div style="display:inline-block;">
+          <b>Image DPI</b>
+          <select id="dpi_menu">
+            <option value="">Current</option>
+            <option value="96">96</option>
+            <option value="150">150</option>
+            <option value="200">200</option>
+            <option value="300">300</option>
+            <option value="600">600</option>
+          </select>
           <button type="button" onclick="getImage()">Download image</button>
         </div>
         <div style="display:inline-block;">

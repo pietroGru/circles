@@ -729,6 +729,45 @@ function updateDataView() {
 
 
 async function getImage() {
+  var dpi = parseInt((document.getElementById("dpi_menu") || {}).value);
+  var oldRatio = circles.get("pixelRatio");
+  // The picker needs transient user activation, so it must open before any waiting
+  var handle = null;
+  if (window.showSaveFilePicker) {
+    handle = await self.showSaveFilePicker({
+      suggestedName: 'piechart.png',
+      types: [{
+        description: 'PNG file',
+        accept: {
+          'image/png': ['.png'],
+        },
+      }],
+    });
+  }
+  if (dpi > 0) {
+    // Disable animations so the redraw at the new ratio is final when captured
+    var animated = config.show_animations;
+    config.show_animations = false;
+    updateAnimations();
+    // 96 DPI corresponds to a pixel ratio of 1
+    circles.set("pixelRatio", dpi / 96);
+    // Animations are off, so a few frames are enough for the redraw to complete
+    for (var i = 0; i < 3; i++) {
+      await new Promise((res) => requestAnimationFrame(res));
+    }
+  }
+  try {
+    await saveImage(handle);
+  } finally {
+    if (dpi > 0) {
+      circles.set("pixelRatio", oldRatio);
+      config.show_animations = animated;
+      updateAnimations();
+    }
+  }
+}
+
+async function saveImage(handle) {
   var canvas1 = document
     .getElementById("visualization")
     .getElementsByTagName("canvas")[0];
@@ -745,22 +784,14 @@ async function getImage() {
   canvas.height = canvas1.height;
   ctx.drawImage(canvas1, 0, 0);
   ctx.drawImage(canvas2, 0, 0);
-  ctx.drawImage(logo, 32, 32, 72, 72); // Adjust the position and size as needed
+  var scale = canvas1.width / canvas1.clientWidth;
+  ctx.drawImage(logo, 32 * scale, 32 * scale, 72 * scale, 72 * scale); // Adjust the position and size as needed
 
   const image = await new Promise((res) => canvas.toBlob(res));
-  if (window.showSaveFilePicker) {
-    const handle = await self.showSaveFilePicker({
-      suggestedName: 'piechart.png',
-      types: [{
-        description: 'PNG file',
-        accept: {
-          'image/png': ['.png'],
-        },
-      }],
-    });
+  if (handle) {
     const writable = await handle.createWritable();
     await writable.write(image);
-    writable.close();
+    await writable.close();
   }
   else {
     const saveImg = document.createElement("a");
