@@ -74,7 +74,7 @@ function groupColorDecorator(options, properties, variables) {
 
 function circlesVisibilityDecorator(group) {
   // hide the "other" groups
-  return (group.label != "other");
+  return (group.label != "aother");
 }
 
 function foamtreeVisibilityDecorator(properties, variables) {
