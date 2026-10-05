@@ -752,7 +752,7 @@ async function getImage() {
     // 96 DPI corresponds to a pixel ratio of 1
     circles.set("pixelRatio", dpi / 96);
     // Animations are off, so a few frames are enough for the redraw to complete
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < 10; i++) {
       await new Promise((res) => requestAnimationFrame(res));
     }
   }
